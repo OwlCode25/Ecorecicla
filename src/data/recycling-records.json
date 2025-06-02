@@ -1,0 +1,24 @@
+{
+  "records": [
+    {
+      "id": "mbei63i0qerjrbu826a",
+      "userId": "mbei5g8jmshkwxnw8fd",
+      "materialType": "METAL",
+      "quantity": 120,
+      "unit": "kg",
+      "earned": 12000,
+      "type": "money",
+      "date": "2025-06-02T03:00:59.832Z"
+    },
+    {
+      "id": "mbei773maqha71oza4",
+      "userId": "mbei5g8jmshkwxnw8fd",
+      "materialType": "MATTRESS",
+      "quantity": 4,
+      "unit": null,
+      "earned": 200,
+      "type": "points",
+      "date": "2025-06-02T03:01:51.154Z"
+    }
+  ]
+}

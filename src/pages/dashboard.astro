@@ -1,0 +1,316 @@
+---
+// src/pages/dashboard.astro
+import Layout from "../layouts/Layout.astro";
+import { getUserRecords } from "../utils/database.js";
+---
+
+<Layout title="Dashboard - EcoRecicla">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header del Dashboard -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                        Mi Dashboard
+                    </h1>
+                    <p class="text-gray-600">
+                        Bienvenido de vuelta, <span id="userName">Usuario</span>
+                    </p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-gray-500">Última actualización</p>
+                    <p class="text-sm text-gray-700" id="lastUpdate">Ahora</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="grid md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-green-500 text-white rounded-lg shadow-md p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-green-100 text-sm">Dinero Ganado</p>
+                        <p class="text-2xl font-bold">
+                            $<span id="totalMoney">0</span>
+                        </p>
+                    </div>
+                    <span class="text-3xl">💰</span>
+                </div>
+            </div>
+
+            <div class="bg-blue-500 text-white rounded-lg shadow-md p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-blue-100 text-sm">Puntos Acumulados</p>
+                        <p class="text-2xl font-bold">
+                            <span id="totalPoints">0</span>/1000
+                        </p>
+                    </div>
+                    <span class="text-3xl">🎁</span>
+                </div>
+            </div>
+
+            <div class="bg-purple-500 text-white rounded-lg shadow-md p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-purple-100 text-sm">Total Reciclado</p>
+                        <p class="text-2xl font-bold">
+                            <span id="totalRecycled">0</span> kg
+                        </p>
+                    </div>
+                    <span class="text-3xl">♻️</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acciones Rápidas -->
+        <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                    Acciones Rápidas
+                </h3>
+                <div class="space-y-3">
+                    <a
+                        href="/recycle"
+                        class="flex items-center justify-between p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+                    >
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">📦</span>
+                            <span class="font-medium">Registrar Reciclaje</span>
+                        </div>
+                        <span class="text-green-600">→</span>
+                    </a>
+
+                    <a
+                        href="/rewards"
+                        class="flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                    >
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">🎁</span>
+                            <span class="font-medium">Ver Recompensas</span>
+                        </div>
+                        <span class="text-blue-600">→</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                    Mi Progreso
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <div
+                            class="flex justify-between text-sm text-gray-600 mb-1"
+                        >
+                            <span>Puntos hacia la siguiente meta</span>
+                            <span><span id="currentPoints">0</span>/1000</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                                id="progressBar"
+                                class="bg-blue-500 h-2 rounded-full transition-all duration-500"
+                                style="width: 0%"
+                            >
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div class="bg-gray-50 rounded-lg p-3">
+                            <p
+                                class="text-2xl font-bold text-gray-800"
+                                id="recyclingDays"
+                            >
+                                0
+                            </p>
+                            <p class="text-xs text-gray-600">Días reciclando</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3">
+                            <p
+                                class="text-2xl font-bold text-gray-800"
+                                id="totalTransactions"
+                            >
+                                0
+                            </p>
+                            <p class="text-xs text-gray-600">Transacciones</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historial Reciente -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                Historial Reciente
+            </h3>
+            <div id="recentHistory" class="space-y-3">
+                <p class="text-gray-500 text-center py-8">
+                    No hay registros de reciclage aún
+                </p>
+            </div>
+            <div class="text-center mt-4">
+                <button
+                    id="loadMoreBtn"
+                    class="text-blue-600 hover:text-blue-800 transition-colors hidden"
+                >
+                    Ver más registros
+                </button>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    // Verificar si el usuario está logueado - si no, redirigir a login
+    const currentUser = JSON.parse(
+        localStorage.getItem("currentUser") || "null",
+    );
+
+    if (!currentUser) {
+        // Redirigir a login con mensaje
+        window.location.href =
+            "/login?message=Debes iniciar sesión para acceder";
+    } else {
+        loadDashboard();
+    }
+
+    async function loadDashboard() {
+        // Actualizar nombre de usuario
+        document.getElementById("userName").textContent = currentUser.name;
+
+        // Cargar datos actualizados del usuario
+        try {
+            const response = await fetch("/api/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email: currentUser.email }),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                const user = result.user;
+
+                // Actualizar localStorage
+                localStorage.setItem("currentUser", JSON.stringify(user));
+
+                // Actualizar estadísticas
+                document.getElementById("totalMoney").textContent =
+                    user.money || 0;
+                document.getElementById("totalPoints").textContent =
+                    user.points || 0;
+                document.getElementById("currentPoints").textContent =
+                    user.points || 0;
+
+                // Actualizar barra de progreso
+                const progressPercent = ((user.points || 0) / 1000) * 100;
+                document.getElementById("progressBar").style.width =
+                    progressPercent + "%";
+
+                // Cargar historial
+                await loadHistory(user.id);
+
+                // Calcular estadísticas adicionales
+                calculateStats(user.id);
+            }
+        } catch (error) {
+            console.error("Error loading dashboard:", error);
+        }
+    }
+
+    async function loadHistory(userId) {
+        try {
+            const response = await fetch(`/api/history?userId=${userId}`);
+            if (response.ok) {
+                const result = await response.json();
+                displayHistory(result.records || []);
+            }
+        } catch (error) {
+            console.error("Error loading history:", error);
+        }
+    }
+
+    function displayHistory(records) {
+        const historyContainer = document.getElementById("recentHistory");
+
+        if (records.length === 0) {
+            historyContainer.innerHTML =
+                '<p class="text-gray-500 text-center py-8">No hay registros de reciclaje aún</p>';
+            return;
+        }
+
+        // Mostrar últimos 5 registros
+        const recentRecords = records.slice(-5).reverse();
+        let totalKg = 0;
+
+        historyContainer.innerHTML = recentRecords
+            .map((record) => {
+                const date = new Date(record.date).toLocaleDateString("es-CL");
+                const material = getMaterialInfo(record.materialType);
+
+                if (record.unit === "kg") {
+                    totalKg += record.quantity;
+                }
+
+                return `
+        <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+          <div class="flex items-center space-x-3">
+            <span class="text-2xl">${material.icon}</span>
+            <div>
+              <p class="font-medium text-gray-800">${material.name}</p>
+              <p class="text-sm text-gray-600">${date}</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="font-medium text-gray-800">
+              ${record.quantity} ${record.unit === "kg" ? "kg" : "unidad(es)"}
+            </p>
+            <p class="text-sm ${record.type === "money" ? "text-green-600" : "text-blue-600"}">
+              ${record.type === "money" ? "+$" + record.earned : "+" + record.earned + " pts"}
+            </p>
+          </div>
+        </div>
+      `;
+            })
+            .join("");
+
+        // Actualizar total reciclado
+        document.getElementById("totalRecycled").textContent =
+            totalKg.toFixed(1);
+        document.getElementById("totalTransactions").textContent =
+            records.length;
+    }
+
+    function calculateStats(userId) {
+        // Calcular días reciclando (simplificado)
+        const user = JSON.parse(localStorage.getItem("currentUser"));
+        const createdAt = new Date(user.createdAt);
+        const today = new Date();
+        const daysDiff = Math.floor(
+            (today - createdAt) / (1000 * 60 * 60 * 24),
+        );
+        document.getElementById("recyclingDays").textContent = Math.max(
+            1,
+            daysDiff,
+        );
+    }
+
+    function getMaterialInfo(materialType) {
+        const materials = {
+            METAL: { name: "Metales (Aluminio, Fierro)", icon: "🔧" },
+            COPPER: { name: "Cobre", icon: "🔶" },
+            PLASTIC: { name: "Plástico", icon: "♻️" },
+            PAPER: { name: "Papel y Cartón", icon: "📄" },
+            GLASS: { name: "Vidrio", icon: "🥃" },
+            ORGANIC: { name: "Residuos Orgánicos", icon: "🌱" },
+            TEXTILE: { name: "Ropa y Textiles", icon: "👕" },
+            MATTRESS: { name: "Colchones", icon: "🛏️" },
+            WOOL: { name: "Lana", icon: "🐑" },
+        };
+
+        return materials[materialType] || { name: "Material", icon: "📦" };
+    }
+</script>

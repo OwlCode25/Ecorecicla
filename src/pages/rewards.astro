@@ -1,0 +1,439 @@
+---
+// src/pages/rewards.astro
+import Layout from "../layouts/Layout.astro";
+import { getRewards } from "../utils/database.js";
+
+const rewards = getRewards();
+---
+
+<Layout title="Recompensas - EcoRecicla">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                        Recompensas
+                    </h1>
+                    <p class="text-gray-600">
+                        Canjea tus puntos por increíbles premios
+                    </p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-gray-600">Mis Puntos</p>
+                    <p class="text-2xl font-bold text-blue-600">
+                        <span id="userPoints">0</span>/1000
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barra de progreso -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-gray-700"
+                    >Progreso hacia el máximo</span
+                >
+                <span class="text-sm text-gray-500"
+                    ><span id="progressPoints">0</span>/1000 puntos</span
+                >
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3">
+                <div
+                    id="progressBar"
+                    class="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500"
+                    style="width: 0%"
+                >
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">
+                💡 Tip: Recicla materiales orgánicos y otros para seguir
+                acumulando puntos
+            </p>
+        </div>
+
+        <!-- Filtros -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex flex-wrap gap-4 items-center">
+                <span class="font-medium text-gray-700">Filtrar por:</span>
+                <button
+                    class="filter-btn active px-4 py-2 rounded-full text-sm font-medium transition-colors"
+                    data-category="all"
+                >
+                    Todos
+                </button>
+                <button
+                    class="filter-btn px-4 py-2 rounded-full text-sm font-medium transition-colors"
+                    data-category="supermercado"
+                >
+                    🛒 Supermercado
+                </button>
+                <button
+                    class="filter-btn px-4 py-2 rounded-full text-sm font-medium transition-colors"
+                    data-category="entretenimiento"
+                >
+                    🎬 Entretenimiento
+                </button>
+            </div>
+        </div>
+
+        <!-- Grid de Recompensas -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="rewardsGrid">
+            {
+                rewards.map((reward) => (
+                    <div
+                        class="reward-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                        data-category={reward.category}
+                        data-points={reward.points}
+                    >
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-1">
+                                        {reward.name}
+                                    </h3>
+                                    <p class="text-sm text-gray-600">
+                                        {reward.description}
+                                    </p>
+                                </div>
+                                <div class="ml-4 text-right">
+                                    <span class="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
+                                        {reward.points} pts
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-2xl">
+                                        {reward.category === "supermercado"
+                                            ? "🛒"
+                                            : "🎬"}
+                                    </span>
+                                    <span class="text-sm text-gray-500 capitalize">
+                                        {reward.category}
+                                    </span>
+                                </div>
+
+                                <button
+                                    class="redeem-btn px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                                    data-reward-id={reward.id}
+                                    data-reward-points={reward.points}
+                                    data-reward-name={reward.name}
+                                >
+                                    Canjear
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ))
+            }
+        </div>
+
+        <!-- Mensaje si no hay recompensas disponibles -->
+        <div id="noRewards" class="text-center py-12 hidden">
+            <span class="text-6xl mb-4 block">😔</span>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">
+                No hay recompensas disponibles
+            </h3>
+            <p class="text-gray-600">
+                Recicla más materiales para acumular puntos y desbloquear
+                recompensas.
+            </p>
+            <a
+                href="/recycle"
+                class="inline-block mt-4 bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition-colors"
+            >
+                Ir a Reciclar
+            </a>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div
+        id="confirmModal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"
+    >
+        <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                Confirmar Canje
+            </h3>
+            <p class="text-gray-600 mb-6" id="modalText">
+                ¿Estás seguro de que quieres canjear esta recompensa?
+            </p>
+            <div class="flex space-x-4">
+                <button
+                    id="cancelBtn"
+                    class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                    Cancelar
+                </button>
+                <button
+                    id="confirmBtn"
+                    class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    // Verificar si el usuario está logueado
+    const currentUser = JSON.parse(
+        localStorage.getItem("currentUser") || "null",
+    );
+
+    if (!currentUser) {
+        window.location.href = "/";
+    } else {
+        loadUserPoints();
+        setupEventListeners();
+    }
+
+    let selectedReward = null;
+
+    async function loadUserPoints() {
+        try {
+            const response = await fetch("/api/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email: currentUser.email }),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                const user = result.user;
+                const points = user.points || 0;
+
+                document.getElementById("userPoints").textContent = points;
+                document.getElementById("progressPoints").textContent = points;
+
+                // Actualizar barra de progreso
+                const progressPercent = (points / 1000) * 100;
+                document.getElementById("progressBar").style.width =
+                    progressPercent + "%";
+
+                // Actualizar estado de botones
+                updateRedeemButtons(points);
+
+                // Actualizar localStorage
+                localStorage.setItem("currentUser", JSON.stringify(user));
+            }
+        } catch (error) {
+            console.error("Error loading user points:", error);
+        }
+    }
+
+    function updateRedeemButtons(userPoints) {
+        const buttons = document.querySelectorAll(".redeem-btn");
+        buttons.forEach((btn) => {
+            const requiredPoints = parseInt(
+                btn.getAttribute("data-reward-points"),
+            );
+
+            if (userPoints >= requiredPoints) {
+                btn.disabled = false;
+                btn.textContent = "Canjear";
+                btn.className =
+                    "redeem-btn px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors";
+            } else {
+                btn.disabled = true;
+                btn.textContent = `Necesitas ${requiredPoints - userPoints} pts más`;
+                btn.className =
+                    "redeem-btn px-4 py-2 bg-gray-300 text-gray-500 text-sm font-medium rounded-md cursor-not-allowed";
+            }
+        });
+    }
+
+    function setupEventListeners() {
+        // Filtros
+        const filterButtons = document.querySelectorAll(".filter-btn");
+        filterButtons.forEach((btn) => {
+            btn.addEventListener("click", function () {
+                // Actualizar botón activo
+                filterButtons.forEach((b) => b.classList.remove("active"));
+                this.classList.add("active");
+
+                // Filtrar recompensas
+                filterRewards(this.getAttribute("data-category"));
+            });
+        });
+
+        // Botones de canje
+        const redeemButtons = document.querySelectorAll(".redeem-btn");
+        redeemButtons.forEach((btn) => {
+            btn.addEventListener("click", function () {
+                if (this.disabled) return;
+
+                selectedReward = {
+                    id: this.getAttribute("data-reward-id"),
+                    points: parseInt(this.getAttribute("data-reward-points")),
+                    name: this.getAttribute("data-reward-name"),
+                };
+
+                showConfirmModal();
+            });
+        });
+
+        // Modal
+        document
+            .getElementById("cancelBtn")
+            .addEventListener("click", hideConfirmModal);
+        document
+            .getElementById("confirmBtn")
+            .addEventListener("click", confirmRedeem);
+
+        // Cerrar modal al hacer clic fuera
+        document
+            .getElementById("confirmModal")
+            .addEventListener("click", function (e) {
+                if (e.target === this) {
+                    hideConfirmModal();
+                }
+            });
+
+        // Estilos para botones de filtro
+        updateFilterStyles();
+    }
+
+    function updateFilterStyles() {
+        const filterButtons = document.querySelectorAll(".filter-btn");
+        filterButtons.forEach((btn) => {
+            if (btn.classList.contains("active")) {
+                btn.className =
+                    "filter-btn active px-4 py-2 rounded-full text-sm font-medium bg-blue-600 text-white transition-colors";
+            } else {
+                btn.className =
+                    "filter-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors";
+            }
+        });
+    }
+
+    function filterRewards(category) {
+        const cards = document.querySelectorAll(".reward-card");
+        let visibleCount = 0;
+
+        cards.forEach((card) => {
+            const cardCategory = card.getAttribute("data-category");
+
+            if (category === "all" || cardCategory === category) {
+                card.style.display = "block";
+                visibleCount++;
+            } else {
+                card.style.display = "none";
+            }
+        });
+
+        // Mostrar mensaje si no hay recompensas
+        const noRewardsMsg = document.getElementById("noRewards");
+        const rewardsGrid = document.getElementById("rewardsGrid");
+
+        if (visibleCount === 0) {
+            noRewardsMsg.classList.remove("hidden");
+            rewardsGrid.style.display = "none";
+        } else {
+            noRewardsMsg.classList.add("hidden");
+            rewardsGrid.style.display = "grid";
+        }
+
+        updateFilterStyles();
+    }
+
+    function showConfirmModal() {
+        const modal = document.getElementById("confirmModal");
+        const modalText = document.getElementById("modalText");
+
+        modalText.textContent = `¿Estás seguro de que quieres canjear "${selectedReward.name}" por ${selectedReward.points} puntos?`;
+
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+    }
+
+    function hideConfirmModal() {
+        const modal = document.getElementById("confirmModal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+        selectedReward = null;
+    }
+
+    async function confirmRedeem() {
+        if (!selectedReward) return;
+
+        try {
+            const response = await fetch("/api/redeem", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    userId: currentUser.id,
+                    rewardId: selectedReward.id,
+                }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Mostrar mensaje de éxito
+                showSuccessMessage(
+                    `¡Recompensa "${selectedReward.name}" canjeada exitosamente!`,
+                );
+
+                // Recargar puntos del usuario
+                setTimeout(() => {
+                    loadUserPoints();
+                }, 1000);
+            } else {
+                showErrorMessage(result.error || "Error al canjear recompensa");
+            }
+        } catch (error) {
+            showErrorMessage("Error de conexión");
+        }
+
+        hideConfirmModal();
+    }
+
+    function showSuccessMessage(message) {
+        const toast = createToast(message, "success");
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 5000);
+    }
+
+    function showErrorMessage(message) {
+        const toast = createToast(message, "error");
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 5000);
+    }
+
+    function createToast(message, type) {
+        const toast = document.createElement("div");
+        toast.className = `fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 max-w-sm ${
+            type === "success"
+                ? "bg-green-100 text-green-800 border border-green-200"
+                : "bg-red-100 text-red-800 border border-red-200"
+        }`;
+        toast.textContent = message;
+
+        return toast;
+    }
+</script>
+
+<style>
+    .reward-card {
+        transition: transform 0.2s ease;
+    }
+
+    .reward-card:hover {
+        transform: translateY(-2px);
+    }
+</style>

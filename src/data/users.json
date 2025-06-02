@@ -1,0 +1,13 @@
+{
+  "users": [
+    {
+      "id": "mbei5g8jmshkwxnw8fd",
+      "name": "German",
+      "email": "test@test.cl",
+      "rut": "20.790.331-0",
+      "points": 0,
+      "money": 12000,
+      "createdAt": "2025-06-02T03:00:29.683Z"
+    }
+  ]
+}

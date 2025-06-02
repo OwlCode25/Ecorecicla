@@ -1,0 +1,53 @@
+{
+  "rewards": [
+    {
+      "id": 1,
+      "name": "Descuento 10% Supermercado",
+      "points": 200,
+      "category": "supermercado",
+      "description": "10% de descuento en compras del supermercado"
+    },
+    {
+      "id": 2,
+      "name": "Entrada al Cine",
+      "points": 300,
+      "category": "entretenimiento",
+      "description": "Una entrada gratis al cine"
+    },
+    {
+      "id": 3,
+      "name": "Descuento 20% Supermercado",
+      "points": 400,
+      "category": "supermercado",
+      "description": "20% de descuento en compras del supermercado"
+    },
+    {
+      "id": 4,
+      "name": "2 Entradas al Cine",
+      "points": 500,
+      "category": "entretenimiento",
+      "description": "Dos entradas gratis al cine"
+    },
+    {
+      "id": 5,
+      "name": "Vale $5000 Supermercado",
+      "points": 600,
+      "category": "supermercado",
+      "description": "Vale de $5000 para el supermercado"
+    },
+    {
+      "id": 6,
+      "name": "Entrada a partidos de Chile",
+      "points": 700,
+      "category": "entretenimiento",
+      "description": "Una entrada a los partidos de eliminatorias de Chile"
+    },
+    {
+      "id": 7,
+      "name": "Vale $10000 Supermercado",
+      "points": 1000,
+      "category": "supermercado",
+      "description": "Vale de $10000 para el supermercado"
+    }
+  ]
+}
